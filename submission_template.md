@@ -96,17 +96,40 @@ Unknown: Business logic questions like whether negative amounts or zero amounts 
 
 ## 1) Code Review Findings
 ### Critical bugs
-- 
+- Simply checking if "@" in email is far too weak. It accepts invalid formats like "@@@@", "user@", "@domain", "multiple@at@symbols", "user @domain.com" (with spaces), etc.
+- No validation that items in the list are strings. Will crash with TypeError if email is None, an integer, or any non-string type when trying to use the in operator.
+- Doesn't check for local part, domain part, or top-level domain (TLD) structure.
 
 ### Edge cases & risks
-- 
+- If emails is None, the for loop will crash with TypeError.
+- List containing integers, None, or other types will crash on "@" in email.
+- Email with leading/trailing spaces would fail the weak "@" check.
+- Empty strings would be counted as invalid (no "@"), but no explicit handling. 
+- Multiple @ symbols like in "user@@domain.com" would pass the current implementation.
+- Missing domain/local part like  "user@" or "@domain.com" would pass if they contain "@"
+- "user@domain" would pass but isn't a valid email format.
 
 ### Code quality / design issues
-- 
+- Missing docstring explaining what constitutes a "valid" email.
+- Assumes all elements are strings without validation.
+- Poor separation of concerns;validation logic and counting are coupled.
 
 ## 2) Proposed Fixes / Improvements
 ### Summary of changes
-- 
+- Added input validation to handle None and empty inputs gracefully
+- Added type checking to skip non-string elements instead of crashing
+- Added whitespace trimming to handle emails with leading/trailing spaces
+- Implemented proper email structure validation:
+        Exactly one @ symbol (not zero, not multiple)
+        Non-empty local part (before @)
+        Non-empty domain part (after @)
+        Domain must contain at least one dot (for TLD)
+        Domain cannot start or end with dot
+        TLD (last part of domain) must be at least 2 characters
+- Added comprehensive docstring documenting behavior and validation rules
+- Maintains graceful degradation approach: skips invalid entries rather than crashing
+
+Design Philososphy: I used baalanced validation. I focused on catching common invalid formats without over-engineering (no regex). It validates structural requirements that real emails must have while remaining readable and maintainable.
 
 ### Corrected code
 See `correct_task2.py`
@@ -116,21 +139,37 @@ See `correct_task2.py`
 
 ### Testing Considerations
 If you were to test this function, what areas or scenarios would you focus on, and why?
+- Empty list → should return 0
+- Valid emails with common formats → counted
+- Mix of valid and invalid emails → should count only valid ones
+- All invalid emails → should return 0
+- Invalid patterns (`"@"`, `"user@"`, `"@domain"`, `"a@b@c"`) → rejected
+- Edge cases: whitespace, multiple `@`, domains without dots → handled
+- Non-string entries in list → silently skipped
+- List with non-string elements (integers, None, dicts) → should skip them
+- List with only non-strings → should return 0
 
 ## 3) Explanation Review & Rewrite
 ### AI-generated explanation (original)
 > This function counts the number of valid email addresses in the input list. It safely ignores invalid entries and handles empty input correctly.
 
 ### Issues in original explanation
-- 
+- It makes incorrect claim about "valid" emails. The validation is so weak (just checking for "@") that it accepts obviously invalid formats. Calling them "valid email addresses" is misleading.
+- It's partially true about empty input. It handles empty lists correctly (returns 0), but crashes on None input.
 
 ### Rewritten explanation
-- 
+- Must be a string (non-strings are skipped)
+- Contains exactly one @ symbol
+- Has non-empty local part (before @) and domain part (after @)
+- Domain contains at least one dot (separating domain from TLD)
+- Domain doesn't start or end with a dot
+- Top-level domain (TLD) is at least 2 characters
 
 ## 4) Final Judgment
-- Decision: Approve / Request Changes / Reject
-- Justification:
-- Confidence & unknowns:
+- Decision: Reject
+- Justification: Checking only for the presence of "@" anywhere in the string is insufficient. The validation is so weak it provides negligible value over simply returning len(emails). A complete rewrite is required; the validation logic needs fundamental restructuring.
+- Confidence & unknowns: I have high confidence -> `@` check is objectively insufficient for email validation. I have high confidence -> type checking needed to prevent crashes on non-string inputs
+Unknowns: Graceful degradation vs. exception raising depends on use case. Case sensitivity requirements unspecified. Special character handling in local part follows permissive approach.
 
 ---
 
