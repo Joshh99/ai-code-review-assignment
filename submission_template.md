@@ -1,8 +1,8 @@
 # AI Code Review Assignment (Python)
 
 ## Candidate
-- Name: Joshua
-- Approximate time spent: 33 minutes
+- Name: Joshua Wisdom Momo (joshuawisdom92@gmail.com)
+- Approximate time spent: 100 minutes
 
 ---
 
@@ -129,7 +129,7 @@ Unknown: Business logic questions like whether negative amounts or zero amounts 
 - Added comprehensive docstring documenting behavior and validation rules
 - Maintains graceful degradation approach: skips invalid entries rather than crashing
 
-Design Philososphy: I used baalanced validation. I focused on catching common invalid formats without over-engineering (no regex). It validates structural requirements that real emails must have while remaining readable and maintainable.
+Design Philosophy: I used baalanced validation. I focused on catching common invalid formats without over-engineering (no regex). It validates structural requirements that real emails must have while remaining readable and maintainable.
 
 ### Corrected code
 See `correct_task2.py`

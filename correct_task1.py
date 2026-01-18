@@ -30,7 +30,7 @@ def calculate_average_order_value(orders):
         
         # try to convert amount to float
         try:
-            amount = float(order("amount"))
+            amount = float(order["amount"])
             total += amount 
             correct_count += 1
 
@@ -38,4 +38,4 @@ def calculate_average_order_value(orders):
             # skip invalid amounts
             continue
         
-        return total / correct_count if correct_count > 0 else 0.0
+    return total / correct_count if correct_count > 0 else 0.0
